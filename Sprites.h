@@ -5,9 +5,10 @@ using namespace sf;
 
 class Sprites {
 
-public:
+protected:
 	Sprite sprite;
 
+public:
 	Sprites() {
 
 	};
