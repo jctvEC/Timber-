@@ -18,6 +18,18 @@ public:
 		sprite.setPosition(positionx, positiony);
 	};
 
+	void setPosition(float positionx, float positiony) {
+		sprite.setPosition(positionx, positiony);
+	};
+
+	void setOrigin(float originx, float originy) {
+		sprite.setOrigin(originx, originy);
+	};
+
+	void setRotation(float angle) {
+		sprite.setRotation(angle);
+	};
+
 	Sprite getSprite() {
 		return sprite;
 	};
@@ -27,7 +39,7 @@ public:
 class moveableSprites : public Sprites {
 
 private:
-	float speed;
+	float speed[2]; // Speed(x, y);
 	bool active;
 
 public:	
@@ -39,7 +51,8 @@ public:
 	moveableSprites(Texture &texture, int positionx, int positiony) : Sprites(texture, positionx, positiony) {
 		sprite.setTexture(texture);
 		sprite.setPosition(positionx, positiony);
-		speed = 0.0f;
+		speed[0] = 0.0f;
+		speed[1] = 0.0f;
 		active = false;
 	};
 
@@ -47,22 +60,21 @@ public:
 		return active;
 	};
 
-	int getSpeed() {
-		return speed;
+	float getSpeedX() {
+		return speed[0];
 	};
 
-	void setSpeed(int speed) {
-		this->speed = speed;
+	float getSpeedY() {
+		return speed[1];
 	};
 
-	void setActiveness() {
-		this->active = !this->active;
+	void setSpeed(float speedX, float speedY) {
+		this->speed[0] = speedX;
+		this->speed[1] = speedY;
 	};
 
-	void setPosition(float positionx, float positiony) {
-		sprite.setPosition(positionx, positiony);
+	void setActiveness(bool active) {
+		this->active = active;
 	};
-
-	
 	
 };
