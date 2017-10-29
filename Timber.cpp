@@ -3,9 +3,11 @@
 
 #include "stdafx.h"
 #include "Sprites.h"
+#include <sstream>
 #include <SFML/Graphics.hpp>
 #define NUM_CLOUDS 3
 using namespace sf;
+using namespace std;
 
 int main() {
 
@@ -37,85 +39,123 @@ int main() {
 	for (int i = 0; i < NUM_CLOUDS; i++)
 		cloudSprite[i] = moveableSprites(textureCloud, 0, i * 250);
 
+	// HUD.
+	Font font;
+	font.loadFromFile("fonts/KOMIKAP_.ttf");
+
+	Text messageText;
+	Text scoreText;
+
+	messageText.setFont(font);
+	scoreText.setFont(font);
+
+	messageText.setFillColor(Color::White);
+	scoreText.setFillColor(Color::White);
+	messageText.setCharacterSize(75);
+	scoreText.setCharacterSize(100);
+	messageText.setString("Press Enter to start!");
+	scoreText.setString("Score = ");
+
+	// Position the text
+	FloatRect textRect = messageText.getLocalBounds();
+
+	messageText.setOrigin(textRect.left +
+		textRect.width / 2.0f,
+		textRect.top +
+		textRect.height / 2.0f);
+
+	messageText.setPosition(1920 / 2.0f, 1080 / 2.0f);
+
+	scoreText.setPosition(20, 20);
+
+	// Time control.
 	Clock clock;
+
+	// Pause system.
+	bool paused = true;
+
+	// Score system.
+	int score = 0;
 
 	while (window.isOpen())	{
 		
-		/* 
-		-----------------
-		Handle user input.
-		-----------------
-		*/
+		/* Handle user input. */
+
 
 		// O jogo fecha ao pressionar o Esc.
 		if (Keyboard::isKeyPressed(Keyboard::Escape)) 
 			window.close();
 
-		/*
-		-----------------
-		Update the scene.
-		-----------------
-		*/
+		// O jogo pausa ao pressionar o Enter.
+		if (Keyboard::isKeyPressed(Keyboard::Return))
+			paused = false;
 
-		Time dt = clock.restart();
 
-		if (!beeSprite.isActive()) {
-			// How fast the bee is.
-			srand((int)time(0));
-			beeSprite.setSpeed((rand() % 200) + 200);
 
-			// How high the bee is.   
-			srand((int)time(0) * 10);
-			float height = (rand() % 500) + 500;
-			beeSprite.setPosition(2000, height);
-			beeSprite.setActiveness();
-		} else {
-			
-			// Move the bee
-			beeSprite.setPosition(
-				beeSprite.getSprite().getPosition().x -
-				(beeSprite.getSpeed() * dt.asSeconds()),
-				beeSprite.getSprite().getPosition().y);
+		/*	Update the scene.	*/
 
-			// Has the bee reached the right hand edge of the screen?   
-			if (beeSprite.getSprite().getPosition().x < -100) {
-				// Set it up ready to be a whole new bee next frame     
+		if (!paused) {
+			Time dt = clock.restart();
+
+			if (!beeSprite.isActive()) {
+				// How fast the bee is.
+				srand((int)time(0));
+				beeSprite.setSpeed((rand() % 200) + 200);
+
+				// How high the bee is.   
+				srand((int)time(0) * 10);
+				float height = (rand() % 500) + 500;
+				beeSprite.setPosition(2000, height);
 				beeSprite.setActiveness();
 			}
-		}
-	
-		for (int i = 0; i < NUM_CLOUDS; i++)	{
-			if (!cloudSprite[i].isActive()) {
-				srand((int)time(0) * (i + 1) * 10);
-				cloudSprite[i].setSpeed(rand() % 200);
-
-				srand((int)time(0) * 10);
-				float height = (rand() % ((i + 1) * 150));
-				if (i > 0)
-					height -= 150;
-				cloudSprite[i].setPosition(-200, height);
-				cloudSprite[i].setActiveness();
-			}
 			else {
-				cloudSprite[i].setPosition(
-					cloudSprite[i].getSprite().getPosition().x +
+
+				// Move the bee
+				beeSprite.setPosition(
+					beeSprite.getSprite().getPosition().x -
+					(beeSprite.getSpeed() * dt.asSeconds()),
+					beeSprite.getSprite().getPosition().y);
+
+				// Has the bee reached the right hand edge of the screen?   
+				if (beeSprite.getSprite().getPosition().x < -100) {
+					// Set it up ready to be a whole new bee next frame     
+					beeSprite.setActiveness();
+				}
+			}
+
+			for (int i = 0; i < NUM_CLOUDS; i++) {
+				if (!cloudSprite[i].isActive()) {
+					srand((int)time(0) * (i + 1) * 10);
+					cloudSprite[i].setSpeed(rand() % 200);
+
+					srand((int)time(0) * 10);
+					float height = (rand() % ((i + 1) * 150));
+					if (i > 0)
+						height -= 150;
+					cloudSprite[i].setPosition(-200, height);
+					cloudSprite[i].setActiveness();
+				}
+				else {
+					cloudSprite[i].setPosition(
+						cloudSprite[i].getSprite().getPosition().x +
 						(cloudSprite[i].getSpeed() * dt.asSeconds()),
 						cloudSprite[i].getSprite().getPosition().y);
 
-				// Has the cloud reached the right hand edge of the screen?   
-				if (cloudSprite[i].getSprite().getPosition().x > 1920)	{
-					// Set it up ready to be a whole new cloud next frame     
-					cloudSprite[i].setActiveness();
+					// Has the cloud reached the right hand edge of the screen?   
+					if (cloudSprite[i].getSprite().getPosition().x > 1920) {
+						// Set it up ready to be a whole new cloud next frame     
+						cloudSprite[i].setActiveness();
+					}
 				}
 			}
+
+			stringstream ss;
+			ss << "Score = " << score;
+			scoreText.setString(ss.str());
 		}
 
+		/*	Draw the current scene */
 
-		/*
-		-----------------
-		Draw the current scene.
-		-----------------
-		*/
 		window.clear();
 
 		window.draw(backgroundSprite.getSprite());
@@ -131,11 +171,14 @@ int main() {
 		// Draw the insect
 		window.draw(beeSprite.getSprite());
 
-		/*
-		-----------------
-		Display everything drew.
-		-----------------
-		*/
+		// Draw the score
+		window.draw(scoreText);
+		if (paused)
+			// Draw our message   
+			window.draw(messageText);
+
+
+		/* Display everything drew.	*/
 		window.display();
 	}
 
